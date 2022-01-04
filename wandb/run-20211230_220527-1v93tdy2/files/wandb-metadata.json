@@ -1,0 +1,33 @@
+{
+    "os": "Linux-5.4.0-77-generic-x86_64-with-glibc2.27",
+    "python": "3.9.6",
+    "heartbeatAt": "2021-12-30T13:05:28.159609",
+    "startedAt": "2021-12-30T13:05:27.134401",
+    "docker": null,
+    "gpu": "NVIDIA GeForce GTX 1080 Ti",
+    "gpu_count": 4,
+    "cpu_count": 12,
+    "cuda": null,
+    "args": [
+        "--batch_size=1024",
+        "--data_path=./data/Multi_2dim_log_spiral",
+        "--save_dir=./output/1230/fold7",
+        "--device=1",
+        "--epochs=50",
+        "--wandb",
+        "--Foldstart=0",
+        "--Foldend=7"
+    ],
+    "state": "running",
+    "program": "/home/taerim/sOftrobot/POENet-MultiTracking/train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/terry97-guel/POENet-MultiTracking.git",
+        "commit": "97a43bda8cee13b897827a6de2fbc1ec9cc86c6c"
+    },
+    "email": "taerimyoon@korea.ac.kr",
+    "root": "/home/taerim/sOftrobot/POENet-MultiTracking",
+    "host": "rilab2-All-Series",
+    "username": "taerim",
+    "executable": "/home/taerim/.pyenv/versions/poenet/bin/python"
+}
