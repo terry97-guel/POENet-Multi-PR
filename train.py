@@ -23,11 +23,12 @@ random.seed(SEED)
 
 def train_epoch(model, optimizer, input, label,Loss_Fn, args):
     q_value = model.q_layer(input)
-    q_loss = q_entropy(torch.abs(q_value))
+    n_joint = q_value.size()[1]
+    q_loss = q_entropy(torch.abs(q_value.reshape(-1,2*n_joint)))
     q_loss = torch.mean(q_loss,dim=0)
     total_loss = - args.q_entropy * q_loss 
 
-    output, Twistls = model.poe_layer(q_value)
+    output, _,_ = model.poe_layer(q_value)
     loss = Loss_Fn(output,label)
     # regularizer_loss = args.Twist_norm * Twist_norm(model)
     # regularizer_loss = regularizer_loss + args.Twist2point * Twist2point(Twistls,label)
@@ -46,7 +47,7 @@ def test_epoch(model, input, label, Loss_Fn, args):
     q_loss = torch.mean(q_loss,dim=0)
     q_loss = args.q_entropy * q_loss
 
-    output,Twistls = model.poe_layer(q_value)
+    output, _, _ = model.poe_layer(q_value)
     # Twist2pointloss = args.Twist2point * Twist2point(Twistls,label)
     Twist2pointloss = 0
     
@@ -156,7 +157,53 @@ def main(args):
                 'input_dim':args.input_dim
             }
             torch.save(state, filename)
+            
+            urdf = make_urdf(model)
+            
 
+
+def make_urdf(model):
+    from xml.dom import minidom 
+    root = minidom.Document() 
+    robot = root.createElement('robot')
+    robot.setAttribute('name','softrobot')
+
+    robot = addjoint(robot,jointname,model)
+
+
+def addjoint(robot,jointidx,model):
+    jointname = get_jointname(jointidx,model)
+    Twist = getattr(model.poe_layer, jointname)
+
+    # creat root element
+    xml = robot.createElement('joint') 
+    xml.setAttribute('name','J1')
+    xml.setAttribute('type','revolute')
+    robot.appendChild(xml) 
+
+    # set origin for joint
+    productChild = robot.createElement('origin')
+    xyz = Twist.get_pos
+    productChild.setAttribute('xyz',xyz )
+    xml.appendChild(productChild) 
+
+    # set axis for joint
+    productChild = robot.createElement('axis')
+    xyz = Twist.get_axis
+    productChild.setAttribute('xyz',xyz)
+    xml.appendChild(productChild) 
+
+    # set axis for parent
+    productChild = robot.createElement('parent')
+    productChild.setAttribute('link','r_farm')
+    xml.appendChild(productChild) 
+
+    # set axis for child
+    productChild = robot.createElement('child')
+    productChild.setAttribute('link','r_farm')
+    xml.appendChild(productChild) 
+
+    return robot
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description= 'parse for POENet')
@@ -191,7 +238,7 @@ if __name__ == '__main__':
     args.add_argument('--wandb', action = 'store_true', help = 'Use wandb to log')
     args.add_argument('--input_dim', default= 2, type=int,
                     help='dimension of input')
-    args.add_argument('--epochs', default= 100, type=int,
+    args.add_argument('--epochs', default= 50, type=int,
                     help='number of epoch to perform')
     # args.add_argument('--early_stop', default= 50, type=int,
     #                 help='number of n_Scence to early stop')
